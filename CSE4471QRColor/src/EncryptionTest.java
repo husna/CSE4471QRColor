@@ -20,8 +20,10 @@ public class EncryptionTest {
 	    System.out.println(message);
 	    
         /* Info needed for key generation */
-	    byte [] salt = {0,1,0xA,0xB,0xC,0xD,0xE,0xF}; // needs to be 8 bytes long
+	    byte[] salt = {0,1,0xA,0xB,0xC,0xD,0xE,0xF}; // needs to be 8 bytes long
+	    byte[] salt2 = {0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 1, 1};
 	    char[] password = {'p','a','s','s','w','o','r','d'};
+	    char[] password2 = {'p','a','s','s'};
 	    
 	    /* Symetric key encryption */
 	    byte[] encryptedData = AES.encrypt(password, salt, message.getBytes(), ALGORITHM);

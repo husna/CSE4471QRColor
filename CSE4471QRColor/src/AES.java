@@ -77,8 +77,8 @@ public class AES {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
 			ex.printStackTrace();
 		} catch (BadPaddingException ex) {
-			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
-			ex.printStackTrace();
+			System.out.println("Wrong key given");
+			decryptedData = encryptedData;
 		} catch (InvalidKeyException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
 			ex.printStackTrace();
