@@ -1,3 +1,4 @@
+import java.awt.Color;
 
 /**
  * Simple proof of concept showing off how to use the AES class.
@@ -14,17 +15,35 @@ public class EncryptionTest {
     	
     	final String ALGORITHM = "PBEWithMD5AndDES";
     	
-        String message = "Hello, Asma, Hitoe, Jan, and Robert!\n    I hope this"
-                       + " message gets to you safely!";
+        String message = "Quis custodiet ipsos custodes?\nWho will guard the guards themselves?";
 	    System.out.println("Message to encrypt:");
 	    System.out.println(message);
+
+	    /* Applying user's responses to the presented colors */
+//	    Color[] rainbow = {Color.black, Color.BLACK, Color.blue, Color.BLUE, Color.cyan, Color.CYAN,
+//	    				   Color.DARK_GRAY, Color.darkGray, Color.gray, Color.GRAY, Color.green,
+//	    				   Color.GREEN, Color.LIGHT_GRAY, Color.lightGray, Color.magenta, Color.MAGENTA, 
+//	                       Color.orange, Color.ORANGE, Color.pink, Color.PINK, Color.red, Color.RED, 
+//	                       Color.white, Color.WHITE, Color.yellow, Color.YELLOW};
 	    
-        /* Info needed for key generation */
-	    byte[] salt = {0,1,0xA,0xB,0xC,0xD,0xE,0xF}; // needs to be 8 bytes long
-	    byte[] salt2 = {0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 1, 1};
+	    byte[] salt = null;
+	    
+	    for (int i = 0; i < 256; i++) {
+	    	for (int j = 0; j < 256; j++) {
+	    		for (int k = 0; k < 256; k++) {
+	    			Color c = new Color(i, j, k);
+	    			salt = AES.saltShaker(c, c, c);
+	    		}
+	    	}
+	    	
+	    }
+	    
+	    
+	    salt = AES.saltShaker(Color.GREEN, Color.BLUE, Color.RED);
+	    
 	    char[] password = {'p','a','s','s','w','o','r','d'};
-	    char[] password2 = {'p','a','s','s'};
-	    
+	    //char[] password2 = {'p','a','s','s'};
+
 	    /* Symetric key encryption */
 	    byte[] encryptedData = AES.encrypt(password, salt, message.getBytes(), ALGORITHM);
 	    System.out.println("\nEncrypted Message:");
