@@ -49,10 +49,10 @@ public class AES {
 		salt[3] = (byte)Color.red(c3);
 		
 		/* low 4 bits */
-		salt[4] = (byte)password.getBytes()[password.length()-1];
+		salt[4] = (byte)(password.getBytes()[password.length()-1] + password.getBytes()[0]);
 		salt[5] = (byte)Color.green(c1);
 		salt[6] = (byte)Color.green(c2);
-		salt[7] = (byte)( Color.red(c2) + Color.green(c1) + Color.blue(c3));
+		salt[7] = (byte)(Color.red(c2) + Color.green(c1) + Color.blue(c3));
 		return salt;
 	}
 

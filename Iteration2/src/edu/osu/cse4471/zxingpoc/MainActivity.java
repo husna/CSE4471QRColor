@@ -1,7 +1,7 @@
 package edu.osu.cse4471.zxingpoc;
 
 import edu.osu.cse4471.encryption.AES;
-import edu.osu.cse4471.encryption.SimpleCrypto;
+import edu.osu.cse4471.encryption.Crypto;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
 		// generate salt values for symetric key encryption
 		byte[] salt = AES.saltShaker(passText.getText().toString(),
 				Color.BLACK, Color.RED, Color.GREEN);
-		String eMessage = SimpleCrypto.encrypt(salt, editText.getText()
+		String eMessage = Crypto.encrypt(salt, editText.getText()
 				.toString());
 		
 		// use this for copy/paste ecrypted QR code generator
@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
 					Color.BLACK, Color.RED, Color.GREEN);
 
 			// acquire decrypted plain text
-			String decryptedData = SimpleCrypto.decrypt(salt, encryptedText);
+			String decryptedData = Crypto.decrypt(salt, encryptedText);
 
 			// Create the text view
 			TextView textView = new TextView(this);
