@@ -21,6 +21,7 @@ public class MainActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.activity_main);
 	}
 
@@ -36,7 +37,6 @@ public class MainActivity extends Activity {
 	 * @param view
 	 */
 	public void encryptMessage(View view) {
-		
 		// acquire password and message text fields
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		EditText passText = (EditText) findViewById(R.id.password);
@@ -81,6 +81,10 @@ public class MainActivity extends Activity {
 			EditText passText = (EditText)findViewById(R.id.password);
 
 			// TODO prompt users for response colors
+			
+			
+			
+			
 			
 			// generate salt values for symetric key
 			byte[] salt = AES.saltShaker(passText.getText().toString(),

@@ -8,6 +8,9 @@
 package edu.osu.cse4471.zxingpoc;
 
 public final class R {
+    public static final class array {
+        public static final int planets_array=0x7f050000;
+    }
     public static final class attr {
     }
     public static final class drawable {
@@ -15,19 +18,19 @@ public final class R {
         public static final int ic_launcher=0x7f020001;
     }
     public static final class id {
-        public static final int edit_message=0x7f070000;
-        public static final int encryptMessage=0x7f070003;
-        public static final int menu_settings=0x7f070004;
-        public static final int password=0x7f070001;
-        public static final int scanQRCode=0x7f070002;
+        public static final int edit_message=0x7f080000;
+        public static final int encryptMessage=0x7f080003;
+        public static final int menu_settings=0x7f080004;
+        public static final int password=0x7f080001;
+        public static final int scanQRCode=0x7f080002;
     }
     public static final class layout {
         public static final int activity_display_scanned_qrcode=0x7f030000;
         public static final int activity_main=0x7f030001;
     }
     public static final class menu {
-        public static final int activity_display_scanned_qrcode=0x7f060000;
-        public static final int activity_main=0x7f060001;
+        public static final int activity_display_scanned_qrcode=0x7f070000;
+        public static final int activity_main=0x7f070001;
     }
     public static final class string {
         public static final int ENCRYPT=0x7f040004;
@@ -41,6 +44,6 @@ public final class R {
         public static final int title_activity_main=0x7f040005;
     }
     public static final class style {
-        public static final int AppTheme=0x7f050000;
+        public static final int AppTheme=0x7f060000;
     }
 }

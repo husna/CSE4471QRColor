@@ -14,27 +14,45 @@ import android.util.Log;
 
 public class Crypto {
 
-	public static String encrypt(byte[] salt, String cleartext) {
+	private static final int KEY_SIZE = 128;
+	
+	/**
+	 * @param salt a byte[] representing the values used to
+	 * generate the block cipher.
+	 * @param plainText a String representing the message that
+	 * is to be encrypted.
+	 * @return a String of encrypted plainText represented in
+	 * hex characters.
+	 */
+	public static String encrypt(byte[] salt, String plainText) {
 		byte[] rawKey = null;
 		byte[] result = null;
 
 		rawKey = getRawKey(salt);
-		result = encrypt(rawKey, cleartext.getBytes());
+		result = encrypt(rawKey, plainText.getBytes());
 
 		return toHex(result);
+		// TODO test non-hex encoding encryption
 		// return new String(result); // this works too ...
 	}
-
-	public static String decrypt(byte[] salt, String encrypted) {
+	
+	/**
+	 * @param salt a byte[] represents the values used to 
+	 * generate the block cipher.
+	 * @param encryptedText a String representing the encrypted
+	 * message.
+	 * @return a String representing the original plain text.
+	 */
+	public static String decrypt(byte[] salt, String encryptedText) {
 		byte[] rawKey = null;
 		byte[] result = null;
 
 		rawKey = getRawKey(salt);
-		byte[] enc = toByte(encrypted);
+		byte[] enc = toByte(encryptedText);
 		result = decrypt(rawKey, enc);
 
 		return new String(result);
-		// TODO test non-hex encoding 
+		// TODO test non-hex encoding decryption
 		// return new String(result);
 	}
 
@@ -45,7 +63,7 @@ public class Crypto {
 			kgen = KeyGenerator.getInstance("AES");
 			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
 			sr.setSeed(seed);
-			kgen.init(128, sr); // 192 and 256 bits may not be available
+			kgen.init(KEY_SIZE, sr);
 			SecretKey skey = kgen.generateKey();
 			raw = skey.getEncoded();
 		} catch (NoSuchAlgorithmException e) {
@@ -57,8 +75,7 @@ public class Crypto {
 		return raw;
 	}
 
-	private static byte[] encrypt(byte[] raw, byte[] clear) {// throws Exception
-																// {
+	private static byte[] encrypt(byte[] raw, byte[] clear) {
 		SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
 		Cipher cipher;
 		byte[] encrypted = null;
@@ -67,22 +84,26 @@ public class Crypto {
 			cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
 			encrypted = cipher.doFinal(clear);
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
+			Log.d("NoSuchAlgorithmException",
+					"NoSuchAlgorithmException private decrypt");
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
+			Log.d("NoSuchPaddingException",
+					"NoSuchPaddingException private decrypt");
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
+			Log.d("InvalidKeyException", "InvalidKeyException private decrypt");
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
+			Log.d("IllegalBlockSizeException",
+					"IllegalBlockSizeException private decrypt");
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
+			Log.d("BadPaddingException", "BadPaddingException private decrypt");
 			e.printStackTrace();
 		}
-
+		// TODO remove log.debugging statements before release
+		Log.d("CRYPTO_ENCRYPT", new String(encrypted));
 		return encrypted;
 	}
 
@@ -118,10 +139,8 @@ public class Crypto {
 			decrypted = encrypted;
 			e.printStackTrace();
 		}
-
 		// TODO remove log.debugging statements before release
 		Log.d("SIMPLE_CRYPTO_DECRYPT", new String(decrypted));
-
 		return decrypted;
 	}
 
@@ -157,5 +176,4 @@ public class Crypto {
 	private static void appendHex(StringBuffer sb, byte b) {
 		sb.append(HEX.charAt((b >> 4) & 0x0f)).append(HEX.charAt(b & 0x0f));
 	}
-
 }
