@@ -1,5 +1,7 @@
 package edu.osu.cse4471.zxingpoc;
 
+import java.util.Random;
+
 import edu.osu.cse4471.encryption.AES;
 import edu.osu.cse4471.encryption.Crypto;
 
@@ -14,10 +16,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
+	
+	public final static String DISPLAY_MESSAGE = "edu.osu.cse4471.zxingpoc.MainActivity";
+	public final static String ALPHABET = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,9 +47,15 @@ public class MainActivity extends Activity {
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		EditText passText = (EditText) findViewById(R.id.password);
 
-		// TODO handle null editText exception
+		/* handle null editText exception */
+		if (editText.getText().toString().equals("")) {
+			editText.setText(generateRandomPassword(new Random(), ALPHABET, 8));
+		}
 		
-		// TODO handle null password exception
+		/* handle null password exception */
+		if (passText.getText().toString().equals("")) {
+			passText.setText(generateRandomPassword(new Random(), ALPHABET, 8));
+		} 
 		
 		// generate salt values for symetric key encryption
 		byte[] salt = AES.saltShaker(passText.getText().toString(),
@@ -72,35 +84,43 @@ public class MainActivity extends Activity {
 		IntentResult scanResult = IntentIntegrator.parseActivityResult(
 				requestCode, resultCode, intent);
 		if (scanResult != null) {
-			// acquire encrypted text from QR Code
+			/* acquire encrypted text from QR Code */
 			String encryptedText = scanResult.getContents();
 			
-			// TODO handle null password field 
-
-			// acquire user password
+			/* acquire user password */
 			EditText passText = (EditText)findViewById(R.id.password);
+			
+			/* handle null password field */
+			if (passText.getText().toString().equals("")) {
+				passText.setText(generateRandomPassword(new Random(), ALPHABET, 8));
+			}
 
-			// TODO prompt users for response colors
-			
-			
-			
-			
+			/* TODO prompt users for response colors */
 			
 			// generate salt values for symetric key
 			byte[] salt = AES.saltShaker(passText.getText().toString(),
 					Color.BLACK, Color.RED, Color.GREEN);
-
-			// acquire decrypted plain text
+			
+			/* clears password after executing decryption */
+			passText.setText("");
+			
+			/* acquire decrypted plain text */
 			String decryptedData = Crypto.decrypt(salt, encryptedText);
 
-			// Create the text view
-			TextView textView = new TextView(this);
-			textView.setTextSize(40);
-			textView.setText(decryptedData);
-
-			// Set the text view as the activity layout
-			setContentView(textView);
+			Intent dipslayMessage = new Intent(this, DisplayScannedQRCode.class);
+			dipslayMessage.putExtra(DISPLAY_MESSAGE, decryptedData);
+	        startActivity(dipslayMessage);
 		}
-		// else continue with any other code you need in the method
 	}
+	
+	private static String generateRandomPassword(Random rand, String characters, int length)
+	{
+	    char[] text = new char[length];
+	    for (int i = 0; i < length; i++)
+	    {
+	        text[i] = characters.charAt(rand.nextInt(characters.length()));
+	    }
+	    return new String(text);
+	}
+	
 }
