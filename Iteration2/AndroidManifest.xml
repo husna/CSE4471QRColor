@@ -27,6 +27,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.osu.cse4471.zxingpoc.MainActivity" />
         </activity>
+        <activity
+            android:name=".ColorPrompt"
+            android:label="@string/title_activity_color_prompt" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.osu.cse4471.zxingpoc.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

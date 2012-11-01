@@ -10,11 +10,42 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import android.graphics.Color;
 import android.util.Log;
 
 public class Crypto {
 
+	// TODO document crypto class
+	
+	/* TODO document KEY_SIZE variable */
 	private static final int KEY_SIZE = 128;
+	
+	/* TODO document HEX variable */
+	private final static String HEX = "0123456789ABCDEF";
+	
+	/* TODO document BYTE variable */
+	private final static int BYTE = 8;
+	
+	public static byte[] saltShaker(String password, int c1, int c2, int c3) {
+		byte[] salt = new byte[BYTE];
+
+		/* high 4 bits */
+		salt[0] = (byte)(Color.red(c1) + Color.red(c2) + Color.red(c3));
+		salt[1] = (byte)(Color.blue(c1) + Color.blue(c2) + Color.blue(c3));
+		salt[2] = (byte)(Color.green(c1) + Color.green(c2) + Color.green(c3));
+		salt[3] = (byte)(Color.red(c3) - password.getBytes()[0]);
+
+		/* low 4 bits */
+		salt[4] = (byte)(password.getBytes()[password.length() - 1] + 
+				          password.getBytes()[0]);
+		salt[5] = (byte)Color.green(c1);
+		salt[6] = (byte)Color.green(c2);
+		salt[7] = (byte)(Color.red(c2) + Color.green(c1) + Color.blue(c3));
+		return salt;
+	}
+	
+	
 	
 	/**
 	 * @param salt a byte[] representing the values used to
@@ -32,30 +63,37 @@ public class Crypto {
 		result = encrypt(rawKey, plainText.getBytes());
 
 		return toHex(result);
-		// TODO test non-hex encoding encryption
-		// return new String(result); // this works too ...
 	}
 	
 	/**
 	 * @param salt a byte[] represents the values used to 
 	 * generate the block cipher.
-	 * @param encryptedText a String representing the encrypted
+	 * @param cipherText a String representing the encrypted
 	 * message.
 	 * @return a String representing the original plain text.
 	 */
-	public static String decrypt(byte[] salt, String encryptedText) {
+	public static String decrypt(byte[] salt, String cipherText) {
 		byte[] rawKey = null;
 		byte[] result = null;
 
 		rawKey = getRawKey(salt);
-		byte[] enc = toByte(encryptedText);
+		byte[] enc = toByte(cipherText);
+		
+		
+		
+		
 		result = decrypt(rawKey, enc);
 
+		//result = decrypt(rawKey, cipherText.getBytes());
+		
 		return new String(result);
-		// TODO test non-hex encoding decryption
-		// return new String(result);
 	}
 
+	/**
+	 * TODO document getRawKey
+	 * @param seed
+	 * @return
+	 */
 	private static byte[] getRawKey(byte[] seed) {
 		KeyGenerator kgen;
 		byte[] raw = null;
@@ -71,18 +109,23 @@ public class Crypto {
 					"NoSuchAlgorithmException Crypto.getRawKey");
 			e.printStackTrace();
 		}
-
 		return raw;
 	}
 
-	private static byte[] encrypt(byte[] raw, byte[] clear) {
+	/**
+	 * TODO document encrypt
+	 * @param raw
+	 * @param plainText
+	 * @return
+	 */
+	private static byte[] encrypt(byte[] raw, byte[] plainText) {
 		SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
 		Cipher cipher;
 		byte[] encrypted = null;
 		try {
 			cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-			encrypted = cipher.doFinal(clear);
+			encrypted = cipher.doFinal(plainText);
 		} catch (NoSuchAlgorithmException e) {
 			Log.d("NoSuchAlgorithmException",
 					"NoSuchAlgorithmException private decrypt");
@@ -102,41 +145,45 @@ public class Crypto {
 			Log.d("BadPaddingException", "BadPaddingException private decrypt");
 			e.printStackTrace();
 		}
-		// TODO remove log.debugging statements before release
-		Log.d("CRYPTO_ENCRYPT", new String(encrypted));
 		return encrypted;
 	}
 
-	private static byte[] decrypt(byte[] raw, byte[] encrypted) {
+	/**
+	 * TODO document decrypt
+	 * @param raw
+	 * @param cipherText
+	 * @return
+	 */
+	private static byte[] decrypt(byte[] raw, byte[] cipherText) {
 		SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
 		Cipher cipher;
 		byte[] decrypted = null;
 		try {
 			cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-			decrypted = cipher.doFinal(encrypted);
+			decrypted = cipher.doFinal(cipherText);
 		} catch (NoSuchAlgorithmException e) {
 			Log.d("NoSuchAlgorithmException",
 					"NoSuchAlgorithmException private decrypt");
-			decrypted = encrypted;
+			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
 			Log.d("NoSuchPaddingException",
 					"NoSuchPaddingException private decrypt");
-			decrypted = encrypted;
+			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
 			Log.d("InvalidKeyException", "InvalidKeyException private decrypt");
-			decrypted = encrypted;
+			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
 			Log.d("IllegalBlockSizeException",
 					"IllegalBlockSizeException private decrypt");
-			decrypted = encrypted;
+			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
 			Log.d("BadPaddingException", "BadPaddingException private decrypt");
-			decrypted = encrypted;
+			decrypted = cipherText;
 			e.printStackTrace();
 		}
 		// TODO remove log.debugging statements before release
@@ -144,15 +191,12 @@ public class Crypto {
 		return decrypted;
 	}
 
-	public static String toHex(String txt) {
-		return toHex(txt.getBytes());
-	}
-
-	public static String fromHex(String hex) {
-		return new String(toByte(hex));
-	}
-
-	public static byte[] toByte(String hexString) {
+	/**
+	 * TODO document toByte
+	 * @param hexString
+	 * @return
+	 */
+	private static byte[] toByte(String hexString) {
 		int len = hexString.length() / 2;
 		byte[] result = new byte[len];
 		for (int i = 0; i < len; i++)
@@ -161,19 +205,18 @@ public class Crypto {
 		return result;
 	}
 
-	public static String toHex(byte[] buf) {
+	/**
+	 * TODO document toHex
+	 * @param buf
+	 * @return
+	 */
+	private static String toHex(byte[] buf) {
 		if (buf == null)
 			return "";
 		StringBuffer result = new StringBuffer(2 * buf.length);
 		for (int i = 0; i < buf.length; i++) {
-			appendHex(result, buf[i]);
+			result.append(HEX.charAt((buf[i] >> 4) & 0x0f)).append(HEX.charAt(buf[i] & 0x0f));
 		}
 		return result.toString();
-	}
-
-	private final static String HEX = "0123456789ABCDEF";
-
-	private static void appendHex(StringBuffer sb, byte b) {
-		sb.append(HEX.charAt((b >> 4) & 0x0f)).append(HEX.charAt(b & 0x0f));
 	}
 }
