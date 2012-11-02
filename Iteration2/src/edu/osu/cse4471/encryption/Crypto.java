@@ -16,36 +16,39 @@ import android.util.Log;
 
 public class Crypto {
 
-	// TODO document crypto class
-	
-	/* TODO document KEY_SIZE variable */
+	/* Size of symmetric key in bits */
 	private static final int KEY_SIZE = 128;
 	
-	/* TODO document HEX variable */
+	/* String of all valid hex numbers */
 	private final static String HEX = "0123456789ABCDEF";
 	
-	/* TODO document BYTE variable */
+	/* Number of bytes used in salt */
 	private final static int BYTE = 8;
 	
-	public static byte[] saltShaker(String password, int c1, int c2, int c3) {
+	/**
+	 * @param password a String password used for generating salt values
+	 * @param lowerLeft an int representing the color response to lower left color
+	 * @param upperLeft an int representing the color response to upper left color
+	 * @param upperRight an int representing the color response to upper right color
+	 * @return a byte[] of the salt used for symmetric key generation.
+	 */
+	public static byte[] saltShaker(String password, int lowerLeft, int upperLeft, int upperRight) {
 		byte[] salt = new byte[BYTE];
 
 		/* high 4 bits */
-		salt[0] = (byte)(Color.red(c1) + Color.red(c2) + Color.red(c3));
-		salt[1] = (byte)(Color.blue(c1) + Color.blue(c2) + Color.blue(c3));
-		salt[2] = (byte)(Color.green(c1) + Color.green(c2) + Color.green(c3));
-		salt[3] = (byte)(Color.red(c3) - password.getBytes()[0]);
+		salt[0] = (byte)(Color.red(lowerLeft) + Color.red(upperLeft) + Color.red(upperRight));
+		salt[1] = (byte)(Color.blue(lowerLeft) + Color.blue(upperLeft) + Color.blue(upperRight));
+		salt[2] = (byte)(Color.green(lowerLeft) + Color.green(upperLeft) + Color.green(upperRight));
+		salt[3] = (byte)(Color.red(upperRight) - password.getBytes()[0]);
 
 		/* low 4 bits */
 		salt[4] = (byte)(password.getBytes()[password.length() - 1] + 
 				          password.getBytes()[0]);
-		salt[5] = (byte)Color.green(c1);
-		salt[6] = (byte)Color.green(c2);
-		salt[7] = (byte)(Color.red(c2) + Color.green(c1) + Color.blue(c3));
+		salt[5] = (byte)Color.green(lowerLeft);
+		salt[6] = (byte)Color.green(upperLeft);
+		salt[7] = (byte)(Color.red(upperLeft) + Color.green(lowerLeft) + Color.blue(upperRight));
 		return salt;
 	}
-	
-	
 	
 	/**
 	 * @param salt a byte[] representing the values used to
@@ -78,29 +81,21 @@ public class Crypto {
 
 		rawKey = getRawKey(salt);
 		byte[] enc = toByte(cipherText);
-		
-		
-		
-		
 		result = decrypt(rawKey, enc);
-
-		//result = decrypt(rawKey, cipherText.getBytes());
-		
 		return new String(result);
 	}
 
 	/**
-	 * TODO document getRawKey
-	 * @param seed
-	 * @return
+	 * @param salt a byte[] of salt values for symetric key generation
+	 * @return a byte[]  the rawkey
 	 */
-	private static byte[] getRawKey(byte[] seed) {
+	private static byte[] getRawKey(byte[] salt) {
 		KeyGenerator kgen;
 		byte[] raw = null;
 		try {
 			kgen = KeyGenerator.getInstance("AES");
 			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-			sr.setSeed(seed);
+			sr.setSeed(salt);
 			kgen.init(KEY_SIZE, sr);
 			SecretKey skey = kgen.generateKey();
 			raw = skey.getEncoded();
@@ -113,10 +108,9 @@ public class Crypto {
 	}
 
 	/**
-	 * TODO document encrypt
-	 * @param raw
-	 * @param plainText
-	 * @return
+	 * @param raw a byte[] used for symmetric key generation.
+	 * @param plainText a byte[] storing the plain text message
+	 * @return a byte[] of encrypted bytes
 	 */
 	private static byte[] encrypt(byte[] raw, byte[] plainText) {
 		SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
@@ -149,10 +143,9 @@ public class Crypto {
 	}
 
 	/**
-	 * TODO document decrypt
-	 * @param raw
-	 * @param cipherText
-	 * @return
+	 * @param raw a byte[] used for symmetric key generation.
+	 * @param cipherText a byte[] of the cipher text (encrypted)
+	 * @return a byte[] of the plain text
 	 */
 	private static byte[] decrypt(byte[] raw, byte[] cipherText) {
 		SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
@@ -186,15 +179,12 @@ public class Crypto {
 			decrypted = cipherText;
 			e.printStackTrace();
 		}
-		// TODO remove log.debugging statements before release
-		Log.d("SIMPLE_CRYPTO_DECRYPT", new String(decrypted));
 		return decrypted;
 	}
 
 	/**
-	 * TODO document toByte
-	 * @param hexString
-	 * @return
+	 * @param hexString a String of encrypted hex characters
+	 * @return a byte[] of decrypted bytes
 	 */
 	private static byte[] toByte(String hexString) {
 		int len = hexString.length() / 2;
@@ -206,16 +196,15 @@ public class Crypto {
 	}
 
 	/**
-	 * TODO document toHex
-	 * @param buf
-	 * @return
+	 * @param buffer a byte[] of encrypted bytes
+	 * @return a String of Hex characters
 	 */
-	private static String toHex(byte[] buf) {
-		if (buf == null)
+	private static String toHex(byte[] buffer) {
+		if (buffer == null)
 			return "";
-		StringBuffer result = new StringBuffer(2 * buf.length);
-		for (int i = 0; i < buf.length; i++) {
-			result.append(HEX.charAt((buf[i] >> 4) & 0x0f)).append(HEX.charAt(buf[i] & 0x0f));
+		StringBuffer result = new StringBuffer(2 * buffer.length);
+		for (int i = 0; i < buffer.length; i++) {
+			result.append(HEX.charAt((buffer[i] >> 4) & 0x0f)).append(HEX.charAt(buffer[i] & 0x0f));
 		}
 		return result.toString();
 	}
