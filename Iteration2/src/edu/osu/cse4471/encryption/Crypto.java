@@ -100,7 +100,7 @@ public class Crypto {
 			SecretKey skey = kgen.generateKey();
 			raw = skey.getEncoded();
 		} catch (NoSuchAlgorithmException e) {
-			Log.d("NoSuchAlgorithmException",
+			Log.e("NoSuchAlgorithmException",
 					"NoSuchAlgorithmException Crypto.getRawKey");
 			e.printStackTrace();
 		}
@@ -121,22 +121,22 @@ public class Crypto {
 			cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
 			encrypted = cipher.doFinal(plainText);
 		} catch (NoSuchAlgorithmException e) {
-			Log.d("NoSuchAlgorithmException",
+			Log.e("NoSuchAlgorithmException",
 					"NoSuchAlgorithmException private decrypt");
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
-			Log.d("NoSuchPaddingException",
+			Log.e("NoSuchPaddingException",
 					"NoSuchPaddingException private decrypt");
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			Log.d("InvalidKeyException", "InvalidKeyException private decrypt");
+			Log.e("InvalidKeyException", "InvalidKeyException private decrypt");
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
-			Log.d("IllegalBlockSizeException",
+			Log.e("IllegalBlockSizeException",
 					"IllegalBlockSizeException private decrypt");
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
-			Log.d("BadPaddingException", "BadPaddingException private decrypt");
+			Log.e("BadPaddingException", "BadPaddingException private decrypt");
 			e.printStackTrace();
 		}
 		return encrypted;
@@ -156,26 +156,26 @@ public class Crypto {
 			cipher.init(Cipher.DECRYPT_MODE, skeySpec);
 			decrypted = cipher.doFinal(cipherText);
 		} catch (NoSuchAlgorithmException e) {
-			Log.d("NoSuchAlgorithmException",
+			Log.e("NoSuchAlgorithmException",
 					"NoSuchAlgorithmException private decrypt");
 			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
-			Log.d("NoSuchPaddingException",
+			Log.e("NoSuchPaddingException",
 					"NoSuchPaddingException private decrypt");
 			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			Log.d("InvalidKeyException", "InvalidKeyException private decrypt");
+			Log.e("InvalidKeyException", "InvalidKeyException private decrypt");
 			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
-			Log.d("IllegalBlockSizeException",
+			Log.e("IllegalBlockSizeException",
 					"IllegalBlockSizeException private decrypt");
 			decrypted = cipherText;
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
-			Log.d("BadPaddingException", "BadPaddingException private decrypt");
+			Log.e("BadPaddingException", "BadPaddingException private decrypt");
 			decrypted = cipherText;
 			e.printStackTrace();
 		}

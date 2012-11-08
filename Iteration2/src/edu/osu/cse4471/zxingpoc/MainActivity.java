@@ -12,18 +12,20 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	/* ID for activity passing from MainActivity */
 	public final static String DISPLAY_MESSAGE = "edu.osu.cse4471.zxingpoc.MainActivity";
-	
+
 	/* a String of all the valid letters used in random password generation */
 	public final static String ALPHABET = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -37,9 +39,10 @@ public class MainActivity extends Activity {
 	}
 
 	/**
-	 *  This method encrypts the text that is in the 
-	 *  edit_message EditText field. 
-	 * @param view the current View object
+	 * This method encrypts the text that is in the edit_message EditText field.
+	 * 
+	 * @param view
+	 *            the current View object
 	 */
 	public void encryptMessage(View view) {
 		/* acquire password and plain text fields */
@@ -54,28 +57,32 @@ public class MainActivity extends Activity {
 		/* handle null password exception */
 		if (password.getText().toString().equals("")) {
 			password.setText(generateRandomPassword(ALPHABET, 8));
-		} 
+		}
 
-		/* generate salt values for symetric key encryption */
+		/* generate salt values for symmetric key encryption */
 		byte[] salt = Crypto.saltShaker(password.getText().toString(),
-				                     Color.BLUE, Color.RED, Color.GREEN);
+				Color.BLUE, Color.RED, Color.GREEN);
 
 		/* generate cipher text */
-		String cipherText = Crypto.encrypt(salt, plainText.getText().toString());
+		String cipherText = Crypto
+				.encrypt(salt, plainText.getText().toString());
 
 		/* clears password after encrypting */
 		password.setText("");
-		
-		/* TODO [DELETEME before due] use this for copy/paste ecrypted QR code generator */
+
+		/*
+		 * TODO [DELETEME before due] use this for copy/paste ecrypted QR code
+		 * generator
+		 */
 		Log.d("ENCRYPT", cipherText);
 
 		/* launches DisplayScannedQRCode activity to display cipher text */
 		Intent dipslayMessage = new Intent(this, DisplayScannedQRCode.class);
 		dipslayMessage.putExtra(DISPLAY_MESSAGE, cipherText);
-        startActivity(dipslayMessage);
+		startActivity(dipslayMessage);
 	}
 
-	/** Called when the user clicks the Scan QR Code button */
+	/* Called when the user clicks the Scan QR Code button */
 	public void scanQRCode(View view) {
 		// Do something in response to the button being clicked.
 		IntentIntegrator integrator = new IntentIntegrator(this);
@@ -86,54 +93,81 @@ public class MainActivity extends Activity {
 	 * 
 	 */
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		IntentResult scanResult = IntentIntegrator.parseActivityResult(
-				requestCode, resultCode, intent);
-		if (scanResult != null) {
+
+		if (resultCode == RESULT_OK) {
+			IntentResult scanResult = IntentIntegrator.parseActivityResult(
+					requestCode, resultCode, intent);
+
+			// TODO determine if we want to display this toast
+			// String contents = intent.getStringExtra("SCAN_RESULT");
+			// String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+			// /* Handle successful scan */
+			// Toast toast = Toast.makeText(this, "Content:" + contents
+			// + " Format:" + format, Toast.LENGTH_LONG);
+			// toast.setGravity(Gravity.TOP, 25, 400);
+			// toast.show();
+
 			/* acquire cipher text from QR Code */
 			String cipherText = scanResult.getContents();
-			
+
 			/* acquire user password */
-			EditText password = (EditText)findViewById(R.id.password);
-			
+			EditText password = (EditText) findViewById(R.id.password);
+
 			/* handle null password field */
 			if (password.getText().toString().equals("")) {
 				password.setText(generateRandomPassword(ALPHABET, 8));
 			}
 
 			/* TODO prompt users for response colors */
-			
-			/* generate salt values for symetric key */
+
+			/* generate salt values for symmetric key */
 			byte[] salt = Crypto.saltShaker(password.getText().toString(),
 					Color.BLUE, Color.RED, Color.GREEN);
 
-			/* TODO replace Color.BLACK,Color.RED,Color.GREEN with user choices */
-			
-			/* clears password after decrypting */
+			/*
+			 * TODO replace Color.BLACK,Color.RED,Color.GREEN with user choices
+			 */
+
+			/* clears password */
 			password.setText("");
-			
+
 			/* generate the plain text */
 			String plainText = Crypto.decrypt(salt, cipherText);
 
-			/* launches DisplayScannedQRCode activity to display plain text */
+			/*
+			 * launches DisplayScannedQRCode activity to display plain text
+			 */
 			Intent dipslayMessage = new Intent(this, DisplayScannedQRCode.class);
 			dipslayMessage.putExtra(DISPLAY_MESSAGE, plainText);
-	        startActivity(dipslayMessage);
+			startActivity(dipslayMessage);
+		} else if (resultCode == RESULT_CANCELED) {
+			/* TODO Decide if we should clear password clears password */
+			EditText password = (EditText) findViewById(R.id.password);
+			password.setText("");
+
+			/* Handle cancel */
+			Toast toast = Toast.makeText(this, "Scan was Cancelled!",
+					Toast.LENGTH_LONG);
+			toast.setGravity(Gravity.TOP, 25, 400);
+			toast.show();
 		}
 	}
-	
+
 	/**
-	 * @param alphabet a String representing a list of valid chars to appear in
-	 *  the String to be generated.
-	 * @param length an int representing the desired length of the String
+	 * @param alphabet
+	 *            a String representing a list of valid chars to appear in the
+	 *            String to be generated.
+	 * @param length
+	 *            an int representing the desired length of the String
 	 * @return a random String with the specified length representing a default
-	 * password.
+	 *         password.
 	 */
 	private static String generateRandomPassword(String alphabet, int length) {
 		Random rand = new Random();
-	    char[] text = new char[length];
-	    for (int i = 0; i < length; i++) {
-	        text[i] = alphabet.charAt(rand.nextInt(alphabet.length()));
-	    }
-	    return new String(text);
+		char[] text = new char[length];
+		for (int i = 0; i < length; i++) {
+			text[i] = alphabet.charAt(rand.nextInt(alphabet.length()));
+		}
+		return new String(text);
 	}
 }
