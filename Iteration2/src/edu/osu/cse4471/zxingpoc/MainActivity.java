@@ -98,15 +98,6 @@ public class MainActivity extends Activity {
 			IntentResult scanResult = IntentIntegrator.parseActivityResult(
 					requestCode, resultCode, intent);
 
-			// TODO determine if we want to display this toast
-			// String contents = intent.getStringExtra("SCAN_RESULT");
-			// String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-			// /* Handle successful scan */
-			// Toast toast = Toast.makeText(this, "Content:" + contents
-			// + " Format:" + format, Toast.LENGTH_LONG);
-			// toast.setGravity(Gravity.TOP, 25, 400);
-			// toast.show();
-
 			/* acquire cipher text from QR Code */
 			String cipherText = scanResult.getContents();
 
@@ -134,18 +125,16 @@ public class MainActivity extends Activity {
 			/* generate the plain text */
 			String plainText = Crypto.decrypt(salt, cipherText);
 
-			/*
-			 * launches DisplayScannedQRCode activity to display plain text
-			 */
+			/* launches DisplayScannedQRCode activity to display plain text */
 			Intent dipslayMessage = new Intent(this, DisplayScannedQRCode.class);
 			dipslayMessage.putExtra(DISPLAY_MESSAGE, plainText);
 			startActivity(dipslayMessage);
 		} else if (resultCode == RESULT_CANCELED) {
-			/* TODO Decide if we should clear password clears password */
+			/* clears password */
 			EditText password = (EditText) findViewById(R.id.password);
 			password.setText("");
 
-			/* Handle cancel */
+			/* Toast scan cancelled */
 			Toast toast = Toast.makeText(this, "Scan was Cancelled!",
 					Toast.LENGTH_LONG);
 			toast.setGravity(Gravity.TOP, 25, 400);
