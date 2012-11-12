@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">ZxingPoC</string>
+    <string name="menu_settings">Settings</string>
+    <string name="Scan_QR_Code">Scan QR Code</string>
+    <string name="ENCRYPT">Encrypt</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_display_scanned_qrcode">Display Scanned QR Code</string>
+    <string name="Encrypt_Hint">Click to encrypt your message</string>
+    <string name="password_hint">Enter Password</string>
+    <string name="title_activity_color_prompt">Color Prompt</string>
+</resources>

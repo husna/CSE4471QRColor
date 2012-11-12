@@ -1,136 +1,147 @@
+import java.awt.Color;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
+import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Set;
+import java.security.spec.KeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-
+import javax.crypto.spec.PBEParameterSpec;
 /**
- * This class contains methods for handling AES encryption and decryption. Date:
- * 10/13/2012
- * 
+ * This class contains methods for handling AES encryption and
+ * decryption.
  * @author Akers
  */
 public class AES {
-
+	private final static int ITERATIONS = 10000;
+	private final static int BYTE = 8;
+	
 	/**
-	 * Byte sizes for different encryption keys
+	 * TODO talk about this implementation with Jan and Robert
+	 *
+	 * @param c1 the first response Color 
+	 * @param c2 the second response Color
+	 * @param c3 the third response Color
+	 * @return byte[] the salt used in generating the symetric key
 	 */
-	private final static int KEY_128_BYTE = 128; // recommended for mobile
-	private final static int KEY_192_BYTE = 192; // medium strength
-	private final static int KEY_256_BTYE = 256; // strongest but slower
-
-	/**
-	 * @return a random symetric SecretKey to be used for encryption and
-	 *         decryption.
-	 */
-	public static SecretKey randomSecretKey() {
-		SecretKey skey = null;
-		try {
-			KeyGenerator kgen = KeyGenerator.getInstance("AES");
-			kgen.init(KEY_128_BYTE);
-			skey = kgen.generateKey();
-		} catch (NoSuchAlgorithmException ex) {
-			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		return skey;
+	public static byte[] saltShaker(Color c1, Color c2, Color c3) {
+		byte[] salt = new byte[BYTE];
+		
+		/* high 4 bits */
+		salt[0] = (byte)(c1.getRed() + c2.getRed() + c3.getRed());
+		salt[1] = (byte)(c1.getBlue() + c2.getBlue() + c3.getBlue());
+		salt[2] = (byte)(c1.getGreen() + c2.getGreen() + c3.getGreen());
+		salt[3] = (byte)c2.getRed();
+		
+		/* low 4 bits */
+		salt[4] = (byte)c3.getBlue();
+		salt[5] = (byte)c1.getGreen();
+		salt[6] = (byte)c2.getGreen();
+		salt[7] = (byte)(c2.getRed() + c1.getGreen() + c3.getBlue());
+		return salt;
 	}
 
-	/**
-	 * TODO fix this method so that it works. Exception missing algorithm
-	 * 
-	 * @param password
-	 *            a char[] representing the password used to make symetric key
-	 * @param salt
-	 *            a byte[] representing values that go into making symetric key
-	 * @param algorithm
-	 *            a String representing the algorithm to be used for key
-	 *            generation
-	 * @return a SecretKey based on the password, salt and cipher algorithm
-	 */
-	public static SecretKey passSecretKey(char[] password, byte[] salt,
-			String algorithm) {
-		PBEKeySpec mykeyspec = null;
-		SecretKey key = null;
-		try {
-			final int HASH_ITERATIONS = 10000;
-			final int KEY_LENGTH = 256;
-			mykeyspec = new PBEKeySpec(password, salt, HASH_ITERATIONS,
-					KEY_LENGTH);
-
-			Set<String> algor = Security.getAlgorithms("Cipher");
-			key = SecretKeyFactory.getInstance((String) (algor.toArray())[0])
-					.generateSecret(mykeyspec);
-		} catch (NoSuchAlgorithmException ex) {
-			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InvalidKeySpecException ex) {
-			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		return key;
-	}
-
-	/**
-	 * @param key
-	 *            a byte[] representing a symetric key for which to encrypt data
-	 * @param encryptedData
-	 *            a byte[] of data that is to be decrypted
-	 * @return a byte[] of decrypted bytes
-	 */
-	public static byte[] decrypt(SecretKey key, byte[] encryptedData) {
+    /**
+     * @param password a char[] representing the password used in key creation
+     * @param salt a byte[] representing the salt used in key creation
+     * @param encryptedData a byte[] representing the encrypted data
+     * @param algorithm a String representing the algorithm for decrypting
+     * @return a byte[] represented the decrypted message
+     */
+	public static byte[] decrypt(char[] password, byte[] salt, byte[] encryptedData,
+								 String algorithm) {
 		byte[] decryptedData = null;
 		try {
-			Cipher c = Cipher.getInstance("AES");
-			c.init(Cipher.DECRYPT_MODE, key);
-			decryptedData = c.doFinal(encryptedData);
+			/*preparing the symetric key */
+			KeySpec keySpec = new PBEKeySpec(password, salt, ITERATIONS);
+			SecretKey key = SecretKeyFactory.getInstance(algorithm)
+					.generateSecret(keySpec);
+			AlgorithmParameterSpec paramSpec = new PBEParameterSpec(salt,
+															ITERATIONS);
+
+			/* Prepare the cipher */
+			Cipher dcipher = Cipher.getInstance(key.getAlgorithm());
+			dcipher.init(Cipher.DECRYPT_MODE, key, paramSpec);
+
+			/* Decrypt */
+			decryptedData = dcipher.doFinal(encryptedData);
 		} catch (IllegalBlockSizeException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		} catch (BadPaddingException ex) {
-			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			decryptedData = encryptedData;
 		} catch (InvalidKeyException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		} catch (NoSuchAlgorithmException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		} catch (NoSuchPaddingException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
+		} catch (InvalidKeySpecException ex) {
+			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
+		} catch (InvalidAlgorithmParameterException ex) {
+			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		}
 		return decryptedData;
 	}
 
 	/**
-	 * A method that encrypts plain text into unreadible bytes
-	 * 
-	 * @param key
-	 *            a byte[] representing the symetric key for encrypting the
-	 *            message.
-	 * @param plainText
-	 *            a byte[] reprsenting the message that is to be encoded
-	 * @return a byte[] representing the encrypted data.
+	 * @param password a char[] representing the password used in key creation
+     * @param salt a btye[] representing the salt used in key creation
+     * @param plainText a byte[] representing the data to encrypt
+     * @param algorithm a String representing the algorithm for ebcrypting
+     * @return a byte[] represented the encrypted message.
 	 */
-	public static byte[] encrypt(SecretKey key, byte[] plainText) {
+	public static byte[] encrypt(char[] password, byte[] salt, byte[] plainText,
+								 String algorithm) {
 		byte[] encryptedData = null;
 		try {
-			Cipher c = Cipher.getInstance("AES");
-			c.init(Cipher.ENCRYPT_MODE, key);
-			encryptedData = c.doFinal(plainText);
+			/* Preparing the symetric key */
+			KeySpec keySpec = new PBEKeySpec(password, salt, ITERATIONS);
+			SecretKey key = SecretKeyFactory.getInstance(algorithm)
+					.generateSecret(keySpec);
+			AlgorithmParameterSpec paramSpec = new PBEParameterSpec(salt,
+															ITERATIONS);
+
+			/* Preparing the cipher */
+			Cipher ecipher = Cipher.getInstance(key.getAlgorithm());
+			ecipher.init(Cipher.ENCRYPT_MODE, key, paramSpec);
+
+			/* Encrypt */
+			encryptedData = ecipher.doFinal(plainText);
 		} catch (IllegalBlockSizeException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		} catch (BadPaddingException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		} catch (InvalidKeyException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		} catch (NoSuchAlgorithmException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		} catch (NoSuchPaddingException ex) {
 			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
+		} catch (InvalidKeySpecException ex) {
+			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
+		} catch (InvalidAlgorithmParameterException ex) {
+			Logger.getLogger(AES.class.getName()).log(Level.SEVERE, null, ex);
+			ex.printStackTrace();
 		}
 		return encryptedData;
 	}
