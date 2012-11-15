@@ -1,0 +1,39 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.osu.cse4471.zxingpoc"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="15" />
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".DisplayScannedQRCode"
+            android:label="@string/title_activity_display_scanned_qrcode" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.osu.cse4471.zxingpoc.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ColorPrompt"
+            android:label="@string/title_activity_color_prompt" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.osu.cse4471.zxingpoc.MainActivity" />
+        </activity>
+    </application>
+
+</manifest>
